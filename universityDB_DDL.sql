@@ -97,25 +97,6 @@ CREATE TABLE
         lecturer_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Research Project table
-CREATE TABLE
-    Research_Project (
-        research_project_id INT PRIMARY KEY AUTO_INCREMENT,
-        research_group_id INT NOT NULL, -- FK to Research_Group
-        department_id INT NOT NULL,
-        research_project_title VARCHAR(255) UNIQUE NOT NULL,
-        research_project_funding TEXT,
-        research_project_publications TEXT,
-        research_project_outcomes TEXT,
-        research_project_status ENUM ('Active', 'Completed', 'Discontinued', 'Planned') NOT NULL DEFAULT 'Active',
-        research_project_notes TEXT,
-        UNIQUE (research_project_id, research_group_id),
-        FOREIGN KEY (research_group_id) REFERENCES Research_Group (research_group_id) ON DELETE RESTRICT,
-        FOREIGN KEY (department_id) REFERENCES Department (department_id) ON DELETE RESTRICT,
-        research_project_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        research_project_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-
 CREATE TABLE
     Research_Group (
         research_group_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -137,6 +118,25 @@ CREATE TABLE
         FOREIGN KEY (research_group_id) REFERENCES Research_Group (research_group_id) ON DELETE RESTRICT,
         lecturer_research_group_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         lecturer_research_group_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+-- Research Project table
+CREATE TABLE
+    Research_Project (
+        research_project_id INT PRIMARY KEY AUTO_INCREMENT,
+        research_group_id INT NOT NULL, -- FK to Research_Group
+        department_id INT NOT NULL,
+        research_project_title VARCHAR(255) UNIQUE NOT NULL,
+        research_project_funding TEXT,
+        research_project_publications TEXT,
+        research_project_outcomes TEXT,
+        research_project_status ENUM ('Active', 'Completed', 'Discontinued', 'Planned') NOT NULL DEFAULT 'Active',
+        research_project_notes TEXT,
+        UNIQUE (research_project_id, research_group_id),
+        FOREIGN KEY (research_group_id) REFERENCES Research_Group (research_group_id) ON DELETE RESTRICT,
+        FOREIGN KEY (department_id) REFERENCES Department (department_id) ON DELETE RESTRICT,
+        research_project_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        research_project_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
 -- Non-Academic Staff table and indexes
@@ -169,9 +169,7 @@ CREATE TABLE
         program_id INT NOT NULL, -- FK
         student_first_name VARCHAR(50) NOT NULL,
         student_last_name VARCHAR(50) NOT NULL,
-        student_dob DATE NOT NULL CHECK (
-            student_dob <= DATE_SUB (CURDATE (), INTERVAL 16 YEAR)
-        ),
+        student_dob DATE NOT NULL,
         student_email VARCHAR(255) UNIQUE NOT NULL,
         student_password_hash VARCHAR(255) NOT NULL,
         student_contact_phone VARCHAR(20),
@@ -211,7 +209,7 @@ CREATE TABLE
         organisation_name VARCHAR(100) UNIQUE NOT NULL,
         organisation_description TEXT NOT NULL,
         organisation_status ENUM ('Active', 'Inactive', 'Suspended') NOT NULL DEFAULT 'Active',
-        organisation_membership_type ENUM ('Student', 'Lecturer', 'Staff', 'Mixed') NOT NULL DEFAULT 'Other',
+        organisation_membership_type ENUM ('Student', 'Lecturer', 'Staff', 'Mixed') NOT NULL DEFAULT 'Mixed',
         organisation_type ENUM ('Committee', 'Club', 'Interest Group', 'Other') NOT NULL DEFAULT 'Other',
         organisation_notes TEXT,
         organisation_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
