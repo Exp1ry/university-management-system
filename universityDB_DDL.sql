@@ -1,3 +1,6 @@
+/*
+
+ */
 -- Create schema and select it for use
 CREATE SCHEMA IF NOT EXISTS universityDB;
 
@@ -14,25 +17,25 @@ CREATE TABLE
         department_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Program table
+-- Programme table
 CREATE TABLE
-    Program (
-        program_id INT PRIMARY KEY AUTO_INCREMENT,
-        department_id INT NOT NULL, -- FK
-        program_name VARCHAR(100) UNIQUE NOT NULL,
-        program_degree_awarded VARCHAR(50) NOT NULL,
-        program_duration INT NOT NULL CHECK (program_duration > 0),
-        program_notes TEXT,
+    Programme (
+        programme_id INT PRIMARY KEY AUTO_INCREMENT,
+        department_id INT NOT NULL, -- FK to Department
+        programme_name VARCHAR(100) UNIQUE NOT NULL,
+        programme_degree_awarded VARCHAR(50) NOT NULL,
+        programme_duration INT NOT NULL CHECK (programme_duration > 0),
+        programme_notes TEXT,
         FOREIGN KEY (department_id) REFERENCES Department (department_id) ON DELETE RESTRICT,
-        program_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        program_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        programme_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        programme_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
 -- Course table
 CREATE TABLE
     Course (
         course_id INT PRIMARY KEY AUTO_INCREMENT,
-        department_id INT NOT NULL, -- FK
+        department_id INT NOT NULL, -- FK to Department
         course_code VARCHAR(10) UNIQUE NOT NULL,
         course_name VARCHAR(100) UNIQUE NOT NULL,
         course_description TEXT NOT NULL,
@@ -52,25 +55,27 @@ CREATE TABLE
         course_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
+-- Course Prerequisites relationship table
 CREATE TABLE
     Course_Prerequisite (
         prerequisite_id INT PRIMARY KEY AUTO_INCREMENT,
-        course_id INT NOT NULL, -- FK
+        course_id INT NOT NULL, -- FK to Course
         prerequisite_course_id INT NOT NULL,
         UNIQUE KEY (course_id, prerequisite_course_id),
         FOREIGN KEY (course_id) REFERENCES Course (course_id),
         FOREIGN KEY (prerequisite_course_id) REFERENCES Course (course_id)
     );
 
+-- Programme Course requirements relationship table
 CREATE TABLE
-    Program_Course_Requirement (
-        program_course_requirement_id INT PRIMARY KEY AUTO_INCREMENT,
-        program_id INT NOT NULL, -- FK
-        course_id INT NOT NULL, -- FK
-        program_course_requirement_type ENUM ('Core', 'Elective', 'Optional') NOT NULL DEFAULT 'Core',
-        program_course_requirement_notes TEXT,
-        UNIQUE (program_id, course_id),
-        FOREIGN KEY (program_id) REFERENCES Program (program_id) ON DELETE RESTRICT,
+    Programme_Course_Requirement (
+        programme_course_requirement_id INT PRIMARY KEY AUTO_INCREMENT,
+        programme_id INT NOT NULL, -- FK to Programme
+        course_id INT NOT NULL, -- FK to Course
+        programme_course_requirement_type ENUM ('Core', 'Elective', 'Optional') NOT NULL DEFAULT 'Core',
+        programme_course_requirement_notes TEXT,
+        UNIQUE (programme_id, course_id),
+        FOREIGN KEY (programme_id) REFERENCES Programme (programme_id) ON DELETE RESTRICT,
         FOREIGN KEY (course_id) REFERENCES Course (course_id) ON DELETE RESTRICT,
         requirement_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         requirement_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -80,7 +85,7 @@ CREATE TABLE
 CREATE TABLE
     Lecturer (
         lecturer_id INT PRIMARY KEY AUTO_INCREMENT,
-        department_id INT NOT NULL, -- FK
+        department_id INT NOT NULL, -- FK to Department
         lecturer_first_name VARCHAR(50) NOT NULL,
         lecturer_last_name VARCHAR(50) NOT NULL,
         lecturer_email VARCHAR(255) UNIQUE NOT NULL,
@@ -97,6 +102,7 @@ CREATE TABLE
         lecturer_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
+-- Research Group table
 CREATE TABLE
     Research_Group (
         research_group_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -107,11 +113,12 @@ CREATE TABLE
         research_group_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
+-- Lecturer Research Group relationship table
 CREATE TABLE
     Lecturer_Research_Group (
         lecturer_research_group_id INT PRIMARY KEY AUTO_INCREMENT,
-        lecturer_id INT NOT NULL,
-        research_group_id INT NOT NULL,
+        lecturer_id INT NOT NULL, -- FK to Lecturer
+        research_group_id INT NOT NULL, -- FK to Research Group
         lecturer_research_group_role VARCHAR(50) NOT NULL DEFAULT 'Member',
         UNIQUE (lecturer_id, research_group_id),
         FOREIGN KEY (lecturer_id) REFERENCES Lecturer (lecturer_id) ON DELETE RESTRICT,
@@ -125,25 +132,25 @@ CREATE TABLE
     Research_Project (
         research_project_id INT PRIMARY KEY AUTO_INCREMENT,
         research_group_id INT NOT NULL, -- FK to Research_Group
-        department_id INT NOT NULL,
+        department_id INT NOT NULL, -- FK to Department
         research_project_title VARCHAR(255) UNIQUE NOT NULL,
         research_project_funding TEXT,
         research_project_publications TEXT,
         research_project_outcomes TEXT,
         research_project_status ENUM ('Active', 'Completed', 'Discontinued', 'Planned') NOT NULL DEFAULT 'Active',
         research_project_notes TEXT,
-        UNIQUE (research_project_id, research_group_id),
+        UNIQUE (research_project_title, research_group_id),
         FOREIGN KEY (research_group_id) REFERENCES Research_Group (research_group_id) ON DELETE RESTRICT,
         FOREIGN KEY (department_id) REFERENCES Department (department_id) ON DELETE RESTRICT,
         research_project_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         research_project_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Non-Academic Staff table and indexes
+-- Non-Academic Staff table
 CREATE TABLE
     Staff (
         staff_id INT PRIMARY KEY AUTO_INCREMENT,
-        department_id INT NOT NULL, -- FK
+        department_id INT NOT NULL, -- FK to Department
         staff_first_name VARCHAR(50) NOT NULL,
         staff_last_name VARCHAR(50) NOT NULL,
         staff_email VARCHAR(255) UNIQUE NOT NULL,
@@ -166,7 +173,7 @@ CREATE TABLE
 CREATE TABLE
     Student (
         student_id INT PRIMARY KEY AUTO_INCREMENT,
-        program_id INT NOT NULL, -- FK
+        programme_id INT NOT NULL, -- FK to Programme
         student_first_name VARCHAR(50) NOT NULL,
         student_last_name VARCHAR(50) NOT NULL,
         student_dob DATE NOT NULL,
@@ -184,17 +191,17 @@ CREATE TABLE
             'Exchange Completed'
         ) NOT NULL DEFAULT 'Active',
         student_notes TEXT,
-        FOREIGN KEY (program_id) REFERENCES Program (program_id) ON DELETE RESTRICT,
+        FOREIGN KEY (programme_id) REFERENCES Programme (programme_id) ON DELETE RESTRICT,
         student_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         student_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Student_Advisor relationship table
+-- Student Advisor relationship table
 CREATE TABLE
     Student_Advisor (
         student_advisor_id INT PRIMARY KEY AUTO_INCREMENT,
-        student_id INT NOT NULL UNIQUE, -- FK
-        lecturer_id INT NOT NULL, -- FK
+        student_id INT NOT NULL UNIQUE, -- FK to Student
+        lecturer_id INT NOT NULL, -- FK to Lecturer (Adivsor)
         student_advisor_notes TEXT,
         FOREIGN KEY (student_id) REFERENCES Student (student_id) ON DELETE RESTRICT,
         FOREIGN KEY (lecturer_id) REFERENCES Lecturer (lecturer_id) ON DELETE RESTRICT,
@@ -216,11 +223,12 @@ CREATE TABLE
         organisation_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
+-- Student Organisation relationship table
 CREATE TABLE
     Student_Organisation (
         student_organisation_id INT PRIMARY KEY AUTO_INCREMENT,
-        student_id INT NOT NULL,
-        organisation_id INT NOT NULL,
+        student_id INT NOT NULL, -- FK to Student
+        organisation_id INT NOT NULL, -- FK to Organisation
         student_organisation_role VARCHAR(50) DEFAULT 'Member',
         student_organisation_join_date DATE NOT NULL,
         student_organisation_status ENUM ('Active', 'Inactive', 'Suspended') NOT NULL DEFAULT 'Active',
@@ -232,11 +240,12 @@ CREATE TABLE
         student_organisation_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
+-- Lecturer Organisation relationship table
 CREATE TABLE
     Lecturer_Organisation (
         lecturer_organisation_id INT PRIMARY KEY AUTO_INCREMENT,
-        lecturer_id INT NOT NULL,
-        organisation_id INT NOT NULL,
+        lecturer_id INT NOT NULL, -- FK to Lecturer
+        organisation_id INT NOT NULL, -- FK to Organisation
         lecturer_organisation_role VARCHAR(50) DEFAULT 'Member',
         lecturer_organisation_join_date DATE NOT NULL,
         lecturer_organisation_status ENUM ('Active', 'Inactive', 'Suspended') NOT NULL DEFAULT 'Active',
@@ -248,11 +257,11 @@ CREATE TABLE
         lecturer_organisation_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Table representing course offerings by year and semester
+-- Course Offering table
 CREATE TABLE
     Course_Offering (
         course_offering_id INT PRIMARY KEY AUTO_INCREMENT,
-        course_id INT NOT NULL,
+        course_id INT NOT NULL, -- FK to Course
         course_offering_semester ENUM (
             'Fall',
             'Winter',
@@ -284,25 +293,25 @@ CREATE TABLE
         course_offering_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Table representing assignment of lecturers to course offerings
+-- Course Offering Lecturer relationship table
 CREATE TABLE
     Course_Offering_Lecturer (
         course_offering_lecturer_id INT PRIMARY KEY AUTO_INCREMENT,
-        course_offering_id INT NOT NULL,
-        lecturer_id INT NOT NULL,
+        course_offering_id INT NOT NULL, -- FK to Course Offering
+        lecturer_id INT NOT NULL, -- FK to Lecturer
         UNIQUE (course_offering_id, lecturer_id),
         FOREIGN KEY (course_offering_id) REFERENCES Course_Offering (course_offering_id) ON DELETE RESTRICT,
-        FOREIGN KEY (lecturer_id) REFERENCES lecturer (lecturer_id) ON DELETE RESTRICT,
+        FOREIGN KEY (lecturer_id) REFERENCES Lecturer (lecturer_id) ON DELETE RESTRICT,
         course_offering_lecturer_date_created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         course_offering_lecturer_date_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
--- Table representing enrolment of students in course offerings
+-- Course Offering Student relationship table
 CREATE TABLE
     Course_Offering_Student (
         course_offering_student_id INT PRIMARY KEY AUTO_INCREMENT,
-        course_offering_id INT NOT NULL,
-        student_id INT NOT NULL,
+        course_offering_id INT NOT NULL, -- FK to Course Offering
+        student_id INT NOT NULL, -- FK to Student
         UNIQUE (course_offering_id, student_id),
         course_offering_student_result ENUM (
             'Enroled',
