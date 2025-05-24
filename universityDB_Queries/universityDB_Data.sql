@@ -14,6 +14,8 @@ Each of the tables contain 10 entries.
 Names were created using a random name generator. 
 Emails, phone numbers, addresses, and password hashes are placeholders. 
  */
+-- Select schema for use
+USE universityDB;
 
 -- Insert sample data for Department table
 INSERT INTO Department (department_name, department_research_areas, department_notes) VALUES

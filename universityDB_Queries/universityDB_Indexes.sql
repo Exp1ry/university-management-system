@@ -10,8 +10,11 @@ Group B Team Members:
 
 UniversityDB
 This SQL file defines the indexes for a university record management system. 
-Primary keys, foreign keys, and unique constraints are automatically indexed by MySQL.
+Primary keys, foreign keys, and unique constraints were not indexed, since they are automatically indexed by MySQL.
  */
+-- Select schema for use
+USE universityDB;
+
 -- Student table indexes
 CREATE INDEX idx_student_study_year ON Student (student_study_year);
 
