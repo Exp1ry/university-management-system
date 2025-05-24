@@ -12,8 +12,7 @@ UniversityDB
 This SQL file includes sample data for a university record management system. 
 Each of the tables contain 10 entries.
 Names were created using a random name generator. 
-Emails, phone numbers, addresses, and passwords are placeholders. 
-
+Emails, phone numbers, addresses, and password hashes are placeholders. 
  */
 
 -- Insert sample data for Department table

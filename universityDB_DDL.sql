@@ -2,26 +2,35 @@
 Final Assignment - CSCK542
 
 Group B Team Members:
- - Odalo Aimufia
- - Rami Albaroudi
- - Suely Argelia Bonga Pereira
- - Preet Sall
- - Zaid Widyan
+- Odalo Aimufia
+- Rami Albaroudi
+- Suely Argelia Bonga Pereira
+- Preet Sall
+- Zaid Widyan
 
 UniversityDB
 This SQL file defines the relational schema/Data Definition Language (DDL) for a university record management system. The design is normalised to 3NF.
 
-Tables:
-- Department: Base academic unit structure
-- Programme: Degree programmes offered by departments
-- Course & Course_Prerequisite: Course details and prerequisite relationships
-- Programme_Course_Requirement: Maps courses to program requirements
-- Lecturer & Staff: Academic and non-academic personnel details
-- Student: Student records with program enrolment and academic status
-- Student_Advisor: Tracks faculty-advisor assignments
-- Research_Group & Research_Project: Research activities and outcomes
-- Organisation & membership tables: University committees, clubs, and memberships
-- Course_Offering & related tables: Specific course instances with lecturer assignments and student enrollments
+Core Entity Tables (7 tables):
+- Department - Base academic unit structure
+- Programme - Degree programmes offered by departments
+- Course - Course details and information
+- Lecturer - Academic personnel details
+- Staff - Non-academic personnel details
+- Student - Student records with programme enrolment
+- Research_Group - Research group information
+Relationship/Junction Tables (9 tables):
+- Course_Prerequisite - Course prerequisite relationships
+- Programme_Course_Requirement - Maps courses to programme requirements
+- Student_Advisor - Faculty-advisor assignments (one-to-one)
+- Lecturer_Research_Group - Lecturer research group memberships
+- Research_Project - Research activities and outcomes
+- Organisation - University committees, clubs, and societies
+- Student_Organisation - Student organisation memberships
+- Lecturer_Organisation - Lecturer organisation memberships
+- Course_Offering - Specific course instances
+- Course_Offering_Lecturer - Lecturer assignments to course offerings
+- Course_Offering_Student - Student enrolments in course offerings
 
 Key Features:
 - Deletion of records is restricted, using status fields to mark inactive records
