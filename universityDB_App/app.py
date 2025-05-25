@@ -8,7 +8,17 @@ Group B Team Members:
  - Preet Sall
  - Zaid Widyan
 
-UniversityDB
+UniversityDB - Flask Web Application
+
+This module implements the university database management system using Flask.
+The application provides a web-based interface for managing university data including
+students, courses, programmes, staff, and research information.
+
+Key Features:
+- Role-based authentication (Administrator and Student access levels)
+- Combined table views showing related data in single interfaces
+- Interactive reports with parameterised queries
+
 '''
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -21,10 +31,25 @@ app.secret_key = 'university-db-secret-key-csck542'
 
 
 class DatabaseManager:
+    """
+    Manages database connections and queries for the University Management System.
+
+    This class handles all database operations including student data retrieval,
+    course management, staff information, research data, and report generation.
+    """
+
     def __init__(self):
+        """Initialize DatabaseManager with configuration from config.py"""
         self.config = db_config
 
     def get_connection(self):
+        """
+        Establish connection to MySQL database.
+
+        Returns:
+            mysql.connector.connection: Database connection object if successful
+            None: If connection fails
+        """
         try:
             return mysql.connector.connect(**self.config)
         except Error as e:
@@ -99,7 +124,7 @@ class DatabaseManager:
 
             cursor.execute(
                 student_query, (username, username.replace(' ', '')))
-            students = cursor.fetchall()
+            students = cursor.fetchall() # pylint: disable=locally-disabled, redefined-outer-name
 
             cursor.close()
             connection.close()
@@ -110,7 +135,8 @@ class DatabaseManager:
             return {'students': []}
 
     def get_students_data(self):
-        """Students: Combined view of Student, Course_Offering_Student, Student_Advisor, Student_Organisation"""
+        """Students: Combined view of Student, Course_Offering_Student, 
+        Student_Advisor, Student_Organisation"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -180,7 +206,7 @@ class DatabaseManager:
                 ORDER BY s.student_last_name, s.student_first_name
             """
             cursor.execute(students_query)
-            students = cursor.fetchall()
+            students = cursor.fetchall() # pylint: disable=locally-disabled, redefined-outer-name
 
             cursor.close()
             connection.close()
@@ -247,7 +273,7 @@ class DatabaseManager:
                 ORDER BY d.department_name, p.programme_name
             """
             cursor.execute(programmes_query)
-            programmes = cursor.fetchall()
+            programmes = cursor.fetchall() # pylint: disable=locally-disabled, redefined-outer-name
 
             cursor.close()
             connection.close()
@@ -258,7 +284,8 @@ class DatabaseManager:
             return {'programmes': []}
 
     def get_courses_data(self):
-        """Courses: Combined view of Course, Course_Offering, Course_Offering_Lecturer, Course_Prerequisite"""
+        """Courses: Combined view of Course, Course_Offering, 
+        Course_Offering_Lecturer, Course_Prerequisite"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -316,7 +343,7 @@ class DatabaseManager:
                 ORDER BY c.course_code
             """
             cursor.execute(courses_query)
-            courses = cursor.fetchall()
+            courses = cursor.fetchall() # pylint: disable=locally-disabled, redefined-outer-name
 
             cursor.close()
             connection.close()
@@ -717,16 +744,19 @@ db = DatabaseManager()
 
 
 def is_logged_in():
+    """Check if user has valid session (any role)."""
     return 'user' in session
 
 
 def is_admin():
+    """Check if current user has administrator privileges."""
     return session.get('user', {}).get('access_all', False)
 
 
 # Routes
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Login page for user authentication."""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -743,12 +773,14 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """Clear user session and redirect to login page."""
     session.clear()
     return redirect(url_for('login'))
 
 
 @app.route('/')
 def index():
+    """Display main dashboard for authenticated users."""
     if not is_logged_in():
         return redirect(url_for('login'))
     return render_template('dashboard.html')
@@ -756,6 +788,10 @@ def index():
 
 @app.route('/students')
 def students():
+    """
+    Display student data with role-based filtering.
+    Admins see all students, students see only their own data.
+    """
     if not is_logged_in():
         return redirect(url_for('login'))
 
@@ -771,6 +807,7 @@ def students():
 
 @app.route('/courses')
 def courses():
+    """Display course catalogue with prerequisites and offerings. All users."""
     if not is_logged_in():
         return redirect(url_for('login'))
     # Both admins and students can access courses
@@ -780,6 +817,7 @@ def courses():
 
 @app.route('/programmes')
 def programmes():
+    """Display academic programmes with course requirements. All users."""
     if not is_logged_in():
         return redirect(url_for('login'))
     # Both admins and students can access programmes
@@ -789,6 +827,7 @@ def programmes():
 
 @app.route('/staff')
 def staff():
+    """Display staff management page. Admin access only."""
     if not is_logged_in():
         return redirect(url_for('login'))
     # Only admins can access staff
@@ -802,6 +841,7 @@ def staff():
 
 @app.route('/research')
 def research():
+    """Display research groups and projects. Admin access only."""
     if not is_logged_in():
         return redirect(url_for('login'))
     # Only admins can access research
@@ -815,6 +855,10 @@ def research():
 
 @app.route('/reports', methods=['GET', 'POST'])
 def reports():
+    """
+    Generate database reports with user parameters. Admin access only.
+    GET: Show report forms. POST: Execute queries and display results.
+    """
     if not is_logged_in():
         return redirect(url_for('login'))
     # Only admins can access reports
