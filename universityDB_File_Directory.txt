@@ -1,0 +1,48 @@
+university-management-system
+├── .gitignore
+├── LICENCE
+├── README
+├── universityDB_App
+│   ├── app.py
+│   ├── config.py
+│   ├── requirements.txt
+│   ├── static
+│   │   └── style.css
+│   ├── templates
+│   │   ├── base.html
+│   │   ├── courses.html
+│   │   ├── dashboard.html
+│   │   ├── login.html
+│   │   ├── programmes.html
+│   │   ├── reports.html
+│   │   ├── research.html
+│   │   ├── staff.html
+│   │   └── students.html
+│   └── __pycache__
+│       └── config.cpython-312.pyc
+├── universityDB_Backup
+│   ├── universitydb_course.sql
+│   ├── universitydb_course_offering.sql
+│   ├── universitydb_course_offering_lecturer.sql
+│   ├── universitydb_course_offering_student.sql
+│   ├── universitydb_course_prerequisite.sql
+│   ├── universitydb_department.sql
+│   ├── universitydb_lecturer.sql
+│   ├── universitydb_lecturer_organisation.sql
+│   ├── universitydb_lecturer_research_group.sql
+│   ├── universitydb_organisation.sql
+│   ├── universitydb_programme.sql
+│   ├── universitydb_programme_course_requirement.sql
+│   ├── universitydb_research_group.sql
+│   ├── universitydb_research_project.sql
+│   ├── universitydb_staff.sql
+│   ├── universitydb_student.sql
+│   ├── universitydb_student_advisor.sql
+│   └── universitydb_student_organisation.sql
+└── universityDB_MySQL
+    ├── universityDB_Data.sql
+    ├── universityDB_DDL.sql
+    ├── universityDB_ERD.png
+    ├── universityDB_Indexes.sql
+    ├── universityDB_Workbook.mwb
+    └── universityDB_Workbook.mwb.bak
