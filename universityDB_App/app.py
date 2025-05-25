@@ -526,17 +526,32 @@ class DatabaseManager:
 
                 'staff_by_department': """
                     SELECT 
+                        'Lecturer' AS staff_type,
+                        l.lecturer_id AS staff_id,
+                        CONCAT(l.lecturer_first_name, ' ', l.lecturer_last_name) AS staff_name,
+                        l.lecturer_email AS staff_email,
+                        'Academic Staff' AS staff_title,
+                        l.lecturer_status AS staff_status,
+                        d.department_name
+                    FROM Lecturer l
+                    JOIN Department d ON l.department_id = d.department_id
+                    WHERE d.department_name = %s
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        'Non-Academic Staff' AS staff_type,
                         st.staff_id,
                         CONCAT(st.staff_first_name, ' ', st.staff_last_name) AS staff_name,
                         st.staff_email,
                         st.staff_title,
-                        st.staff_type,
                         st.staff_status,
                         d.department_name
                     FROM Staff st
                     JOIN Department d ON st.department_id = d.department_id
                     WHERE d.department_name = %s
-                    ORDER BY st.staff_last_name, st.staff_first_name
+                    
+                    ORDER BY staff_type, staff_name
                 """,
 
                 'students_by_advisor': """
@@ -692,9 +707,9 @@ def reports():
             department = request.form.get('department')
             if department:
                 results = db.execute_report_query(
-                    'staff_by_department', department=department)
+                    'staff_by_department', department=department, department2=department)
                 query_executed = 'staff_by_department'
-                report_title = f'Staff in {department} Department'
+                report_title = f'All Staff in {department} Department'
 
         elif query_type == 'students_by_advisor':
             lecturer_name = request.form.get('lecturer_name')

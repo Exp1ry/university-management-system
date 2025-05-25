@@ -81,9 +81,9 @@ that users can execute with parameters.
 
             <!-- Query 4: Staff by Department -->
             <div class="card" style="background: var(--background);">
-                <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Staff by Department</h3>
+                <h3 style="color: var(--primary-color); margin-bottom: 1rem;">All Staff by Department</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                    Find all staff members employed in a specific department
+                    Find all staff members (academic and non-academic) employed in a specific department
                 </p>
                 <form method="POST">
                     <input type="hidden" name="query_type" value="staff_by_department">
@@ -169,11 +169,11 @@ that users can execute with parameters.
                         <th>Semester</th>
                         <th>Year</th>
                         {% elif query_executed == 'staff_by_department' %}
+                        <th>Staff Type</th>
                         <th>Staff ID</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Title</th>
-                        <th>Type</th>
+                        <th>Title/Role</th>
                         <th>Status</th>
                         {% elif query_executed == 'students_by_advisor' %}
                         <th>Student ID</th>
@@ -214,12 +214,24 @@ that users can execute with parameters.
                         <td>{{ row.course_offering_semester }}</td>
                         <td>{{ row.course_offering_year }}</td>
                         {% elif query_executed == 'staff_by_department' %}
+                        <td>
+                            {% if row.staff_type == 'Lecturer' %}
+                            <span class="badge badge-success">{{ row.staff_type }}</span>
+                            {% else %}
+                            <span class="badge badge-primary">{{ row.staff_type }}</span>
+                            {% endif %}
+                        </td>
                         <td>{{ row.staff_id }}</td>
                         <td><strong>{{ row.staff_name }}</strong></td>
                         <td><a href="mailto:{{ row.staff_email }}">{{ row.staff_email }}</a></td>
                         <td>{{ row.staff_title }}</td>
-                        <td><span class="badge badge-primary">{{ row.staff_type }}</span></td>
-                        <td><span class="badge badge-success">{{ row.staff_status }}</span></td>
+                        <td>
+                            {% if row.staff_status == 'Active' %}
+                            <span class="badge badge-success">{{ row.staff_status }}</span>
+                            {% else %}
+                            <span class="badge">{{ row.staff_status }}</span>
+                            {% endif %}
+                        </td>
                         {% elif query_executed == 'students_by_advisor' %}
                         <td>{{ row.student_id }}</td>
                         <td><strong>{{ row.student_name }}</strong></td>
