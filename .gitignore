@@ -1,0 +1,6 @@
+## List of files to exclude from GitHub. 
+
+## Exclude Database Credentials
+universityDB_App/config.py
+## Exclude pycache
+**__pycache__

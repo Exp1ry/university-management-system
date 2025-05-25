@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Students - University Database{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
+                👨‍🎓 Students
+            </h1>
+            <p style="color: var(--text-secondary);">
+                Complete list of all students enrolled in the university
+            </p>
+        </div>
+        <div class="badge badge-primary">
+            {{ students|length }} students
+        </div>
+    </div>
+
+    {% if students %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Date of Birth</th>
+                    <th>Address</th>
+                    <th>Study Year</th>
+                    <th>Programme</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Disciplinary Records</th>
+                    <th>Enrolled</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td><strong>{{ student.student_id }}</strong></td>
+                    <td>
+                        <div style="font-weight: 600;">
+                            {{ student.student_first_name }} {{ student.student_last_name }}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="mailto:{{ student.student_email }}" class="text-primary">
+                            {{ student.student_email }}
+                        </a>
+                    </td>
+                    <td>{{ student.student_contact_phone or 'N/A' }}</td>
+                    <td>
+                        {% if student.student_dob %}
+                        {{ student.student_dob.strftime('%Y-%m-%d') }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if student.student_address %}
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                            title="{{ student.student_address }}">
+                            {{ student.student_address }}
+                        </div>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-primary">
+                            Year {{ student.student_study_year }}/{{ student.programme_duration }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ student.programme_name }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            {{ student.programme_degree_awarded }}
+                        </div>
+                    </td>
+                    <td>{{ student.department_name }}</td>
+                    <td>
+                        {% if student.student_status == 'Active' %}
+                        <span class="badge badge-success">{{ student.student_status }}</span>
+                        {% elif student.student_status == 'Suspended' %}
+                        <span class="badge badge-warning">{{ student.student_status }}</span>
+                        {% elif student.student_status == 'Graduated' %}
+                        <span class="badge badge-primary">{{ student.student_status }}</span>
+                        {% elif student.student_status == 'Withdrawn' %}
+                        <span class="badge badge-error">{{ student.student_status }}</span>
+                        {% else %}
+                        <span class="badge">{{ student.student_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if student.student_disciplinary_records %}
+                        <span style="color: var(--warning-color);" title="{{ student.student_disciplinary_records }}">
+                            ⚠️ Records exist
+                        </span>
+                        {% else %}
+                        <span style="color: var(--success-color);">✓ Clean</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <small style="color: var(--text-secondary);">
+                            {{ student.student_date_created.strftime('%Y-%m-%d') }}
+                        </small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+        <h3>No Students Found</h3>
+        <p>There are currently no students in the database.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

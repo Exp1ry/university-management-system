@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Staff - University Database{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
+                👥 Staff Members
+            </h1>
+            <p style="color: var(--text-secondary);">
+                Complete list of all non-academic staff employed by the university
+            </p>
+        </div>
+        <div class="badge badge-primary">
+            {{ staff|length }} staff members
+        </div>
+    </div>
+
+    {% if staff %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Department</th>
+                    <th>Salary</th>
+                    <th>Contract Details</th>
+                    <th>Emergency Contact</th>
+                    <th>Status</th>
+                    <th>Hired</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff_member in staff %}
+                <tr>
+                    <td><strong>{{ staff_member.staff_id }}</strong></td>
+                    <td>
+                        <div style="font-weight: 600;">
+                            {{ staff_member.staff_first_name }} {{ staff_member.staff_last_name }}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="mailto:{{ staff_member.staff_email }}" class="text-primary">
+                            {{ staff_member.staff_email }}
+                        </a>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ staff_member.staff_title }}</div>
+                    </td>
+                    <td>
+                        {% if staff_member.staff_type == 'Full-time' %}
+                        <span class="badge badge-success">{{ staff_member.staff_type }}</span>
+                        {% elif staff_member.staff_type == 'Part-time' %}
+                        <span class="badge badge-primary">{{ staff_member.staff_type }}</span>
+                        {% elif staff_member.staff_type == 'Contract' %}
+                        <span class="badge badge-warning">{{ staff_member.staff_type }}</span>
+                        {% elif staff_member.staff_type == 'Temporary' %}
+                        <span class="badge">{{ staff_member.staff_type }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ staff_member.department_name }}</td>
+                    <td>
+                        {% if staff_member.staff_salary %}
+                        <span style="font-weight: 500;">
+                            £{{ "{:,.2f}".format(staff_member.staff_salary) }}
+                        </span>
+                        {% else %}
+                        <span style="color: var(--text-secondary);">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if staff_member.staff_contract_details %}
+                        <div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                            title="{{ staff_member.staff_contract_details }}">
+                            {{ staff_member.staff_contract_details }}
+                        </div>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if staff_member.staff_emergency_contact_name %}
+                        <div style="font-size: 0.875rem;">
+                            <div style="font-weight: 500;">{{ staff_member.staff_emergency_contact_name }}</div>
+                            {% if staff_member.staff_emergency_contact_phone %}
+                            <div>📞 {{ staff_member.staff_emergency_contact_phone }}</div>
+                            {% endif %}
+                            {% if staff_member.staff_emergency_contact_email %}
+                            <div>✉️ {{ staff_member.staff_emergency_contact_email }}</div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if staff_member.staff_status == 'Active' %}
+                        <span class="badge badge-success">{{ staff_member.staff_status }}</span>
+                        {% elif staff_member.staff_status == 'On Leave' %}
+                        <span class="badge badge-warning">{{ staff_member.staff_status }}</span>
+                        {% elif staff_member.staff_status == 'Suspended' %}
+                        <span class="badge badge-error">{{ staff_member.staff_status }}</span>
+                        {% elif staff_member.staff_status == 'Inactive' %}
+                        <span class="badge">{{ staff_member.staff_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <small style="color: var(--text-secondary);">
+                            {{ staff_member.staff_date_created.strftime('%Y-%m-%d') }}
+                        </small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+        <h3>No Staff Found</h3>
+        <p>There are currently no staff members in the database.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

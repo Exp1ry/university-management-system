@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Departments - University Database{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
+                🏢 Departments
+            </h1>
+            <p style="color: var(--text-secondary);">
+                Academic departments and their research areas
+            </p>
+        </div>
+        <div class="badge badge-primary">
+            {{ departments|length }} departments
+        </div>
+    </div>
+
+    {% if departments %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Department Name</th>
+                    <th>Research Areas</th>
+                    <th>Notes</th>
+                    <th>Created</th>
+                    <th>Modified</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in departments %}
+                <tr>
+                    <td><strong>{{ dept.department_id }}</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: var(--primary-color);">
+                            {{ dept.department_name }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if dept.department_research_areas %}
+                        <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                            title="{{ dept.department_research_areas }}">
+                            🔬 {{ dept.department_research_areas }}
+                        </div>
+                        {% else %}
+                        <span style="color: var(--text-secondary);">No research areas listed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if dept.department_notes %}
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                            title="{{ dept.department_notes }}">
+                            {{ dept.department_notes }}
+                        </div>
+                        {% else %}
+                        <span style="color: var(--text-secondary);">No notes</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <small style="color: var(--text-secondary);">
+                            {{ dept.department_date_created.strftime('%Y-%m-%d %H:%M') }}
+                        </small>
+                    </td>
+                    <td>
+                        <small style="color: var(--text-secondary);">
+                            {{ dept.department_date_modified.strftime('%Y-%m-%d %H:%M') }}
+                        </small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+        <h3>No Departments Found</h3>
+        <p>There are currently no departments in the database.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
