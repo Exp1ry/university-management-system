@@ -456,6 +456,167 @@ class DatabaseManager:
             print(f"Query error: {e}")
             return {'research_groups': [], 'research_projects': []}
 
+    def execute_report_query(self, query_type, **params):
+        """Execute predefined report queries with parameters"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return []
+
+            cursor = connection.cursor(dictionary=True)
+
+            queries = {
+                'high_grade_final_year': """
+                    SELECT 
+                        s.student_id,
+                        CONCAT(s.student_first_name, ' ', s.student_last_name) AS student_name,
+                        s.student_email,
+                        s.student_contact_phone,
+                        s.student_study_year,
+                        p.programme_name,
+                        p.programme_duration,
+                        AVG(cos.course_offering_student_grade) AS average_grade
+                    FROM Student s
+                    JOIN Programme p ON s.programme_id = p.programme_id
+                    JOIN Course_Offering_Student cos ON s.student_id = cos.student_id
+                    WHERE s.student_study_year = p.programme_duration
+                        AND cos.course_offering_student_grade IS NOT NULL
+                    GROUP BY s.student_id, s.student_first_name, s.student_last_name, 
+                            s.student_email, s.student_contact_phone, s.student_study_year,
+                            p.programme_name, p.programme_duration
+                    HAVING AVG(cos.course_offering_student_grade) > 70
+                    ORDER BY average_grade DESC
+                """,
+
+                'student_advisor': """
+                    SELECT 
+                        s.student_id,
+                        CONCAT(s.student_first_name, ' ', s.student_last_name) AS student_name,
+                        s.student_email,
+                        s.student_contact_phone,
+                        s.student_address,
+                        CONCAT(l.lecturer_first_name, ' ', l.lecturer_last_name) AS advisor_name,
+                        l.lecturer_email AS advisor_email,
+                        d.department_name AS advisor_department,
+                        sa.student_advisor_notes
+                    FROM Student s
+                    JOIN Student_Advisor sa ON s.student_id = sa.student_id
+                    JOIN Lecturer l ON sa.lecturer_id = l.lecturer_id
+                    JOIN Department d ON l.department_id = d.department_id
+                    WHERE s.student_id = %s
+                """,
+
+                'courses_by_department': """
+                    SELECT 
+                        c.course_code,
+                        c.course_name,
+                        c.course_level,
+                        c.course_credits,
+                        CONCAT(l.lecturer_first_name, ' ', l.lecturer_last_name) AS lecturer_name,
+                        co.course_offering_semester,
+                        co.course_offering_year
+                    FROM Course c
+                    JOIN Department d ON c.department_id = d.department_id
+                    JOIN Course_Offering co ON c.course_id = co.course_id
+                    JOIN Course_Offering_Lecturer col ON co.course_offering_id = col.course_offering_id
+                    JOIN Lecturer l ON col.lecturer_id = l.lecturer_id
+                    WHERE d.department_name = %s
+                    ORDER BY c.course_code, co.course_offering_year DESC
+                """,
+
+                'staff_by_department': """
+                    SELECT 
+                        st.staff_id,
+                        CONCAT(st.staff_first_name, ' ', st.staff_last_name) AS staff_name,
+                        st.staff_email,
+                        st.staff_title,
+                        st.staff_type,
+                        st.staff_status,
+                        d.department_name
+                    FROM Staff st
+                    JOIN Department d ON st.department_id = d.department_id
+                    WHERE d.department_name = %s
+                    ORDER BY st.staff_last_name, st.staff_first_name
+                """,
+
+                'students_by_advisor': """
+                    SELECT 
+                        s.student_id,
+                        CONCAT(s.student_first_name, ' ', s.student_last_name) AS student_name,
+                        s.student_email,
+                        s.student_study_year,
+                        p.programme_name,
+                        sa.student_advisor_notes
+                    FROM Student s
+                    JOIN Student_Advisor sa ON s.student_id = sa.student_id
+                    JOIN Lecturer l ON sa.lecturer_id = l.lecturer_id
+                    JOIN Programme p ON s.programme_id = p.programme_id
+                    WHERE CONCAT(l.lecturer_first_name, ' ', l.lecturer_last_name) = %s
+                    ORDER BY s.student_last_name, s.student_first_name
+                """,
+            }
+
+            if query_type not in queries:
+                return []
+
+            query = queries[query_type]
+
+            if params:
+                cursor.execute(query, list(params.values()))
+            else:
+                cursor.execute(query)
+
+            results = cursor.fetchall()
+            cursor.close()
+            connection.close()
+
+            return results
+
+        except Error as e:
+            print(f"Report query error: {e}")
+            return []
+
+    def get_departments_list(self):
+        """Get list of departments for dropdown"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return []
+
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT department_name FROM Department ORDER BY department_name")
+            results = cursor.fetchall()
+            cursor.close()
+            connection.close()
+
+            return [dept['department_name'] for dept in results]
+        except Error as e:
+            print(f"Query error: {e}")
+            return []
+
+    def get_lecturers_list(self):
+        """Get list of lecturers for dropdown"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return []
+
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT CONCAT(lecturer_first_name, ' ', lecturer_last_name) AS lecturer_name 
+                FROM Lecturer 
+                ORDER BY lecturer_last_name, lecturer_first_name
+            """)
+            results = cursor.fetchall()
+            cursor.close()
+            connection.close()
+
+            return [lect['lecturer_name'] for lect in results]
+        except Error as e:
+            print(f"Query error: {e}")
+            return []
+
 
 db = DatabaseManager()
 
@@ -497,9 +658,62 @@ def research():
     return render_template('research.html', **data)
 
 
-@app.route('/reports')
+@app.route('/reports', methods=['GET', 'POST'])
 def reports():
-    return render_template('reports.html')
+    results = []
+    query_executed = None
+    report_title = None
+
+    if request.method == 'POST':
+        query_type = request.form.get('query_type')
+
+        if query_type == 'high_grade_final_year':
+            results = db.execute_report_query('high_grade_final_year')
+            query_executed = 'high_grade_final_year'
+            report_title = 'High-Performing Final Year Students'
+
+        elif query_type == 'student_advisor':
+            student_id = request.form.get('student_id')
+            if student_id:
+                results = db.execute_report_query(
+                    'student_advisor', student_id=student_id)
+                query_executed = 'student_advisor'
+                report_title = f'Faculty Advisor for Student ID: {student_id}'
+
+        elif query_type == 'courses_by_department':
+            department = request.form.get('department')
+            if department:
+                results = db.execute_report_query(
+                    'courses_by_department', department=department)
+                query_executed = 'courses_by_department'
+                report_title = f'Courses in {department} Department'
+
+        elif query_type == 'staff_by_department':
+            department = request.form.get('department')
+            if department:
+                results = db.execute_report_query(
+                    'staff_by_department', department=department)
+                query_executed = 'staff_by_department'
+                report_title = f'Staff in {department} Department'
+
+        elif query_type == 'students_by_advisor':
+            lecturer_name = request.form.get('lecturer_name')
+            if lecturer_name:
+                results = db.execute_report_query(
+                    'students_by_advisor', lecturer_name=lecturer_name)
+                query_executed = 'students_by_advisor'
+                report_title = f'Students Advised by {lecturer_name}'
+
+    # Get dropdown data
+    departments = db.get_departments_list()
+    lecturers = db.get_lecturers_list()
+
+    return render_template('reports.html',
+                           results=results,
+                           query_executed=query_executed,
+                           report_title=report_title,
+                           departments=departments,
+                           lecturers=lecturers)
 
 
 if __name__ == '__main__':
