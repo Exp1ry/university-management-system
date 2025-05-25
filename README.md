@@ -32,15 +32,13 @@ This system provides a complete solution for managing university data including 
 - Role-based authentication (Administrator/Student)
 - Session management
 - Data privacy protection
-- SQL injection prevention
 
 ### User Interface
 
-- Responsive design
 - Combined table views
 - Auto-scroll to results
 - Back-to-top navigation
-- Professional styling
+- Aesthetic styling
 
 ## Technology Stack
 
