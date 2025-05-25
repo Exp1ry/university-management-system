@@ -1,123 +1,194 @@
+<!--
+Final Assignment - CSCK542
+
+Group B Team Members:
+ - Odalo Aimufia
+ - Rami Albaroudi
+ - Suely Argelia Bonga Pereira
+ - Preet Sall
+ - Zaid Widyan
+
+UniversityDB
+This template displays the Students page with a comprehensive view combining:
+- Student records
+- Faculty advisors
+- Course enrolments with grades
+- Organisation memberships
+-->
 {% extends "base.html" %}
 
 {% block title %}Students - University Database{% endblock %}
 
 {% block content %}
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
-                👨‍🎓 Students
-            </h1>
-            <p style="color: var(--text-secondary);">
-                Complete list of all students enrolled in the university
-            </p>
-        </div>
-        <div class="badge badge-primary">
-            {{ students|length }} students
-        </div>
-    </div>
+    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">
+        👨‍🎓 Student Management
+    </h1>
 
-    {% if students %}
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Date of Birth</th>
-                    <th>Address</th>
-                    <th>Study Year</th>
-                    <th>Programme</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                    <th>Disciplinary Records</th>
-                    <th>Enrolled</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student in students %}
-                <tr>
-                    <td><strong>{{ student.student_id }}</strong></td>
-                    <td>
-                        <div style="font-weight: 600;">
-                            {{ student.student_first_name }} {{ student.student_last_name }}
-                        </div>
-                    </td>
-                    <td>
-                        <a href="mailto:{{ student.student_email }}" class="text-primary">
-                            {{ student.student_email }}
-                        </a>
-                    </td>
-                    <td>{{ student.student_contact_phone or 'N/A' }}</td>
-                    <td>
-                        {% if student.student_dob %}
-                        {{ student.student_dob.strftime('%Y-%m-%d') }}
-                        {% else %}
-                        N/A
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if student.student_address %}
-                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
-                            title="{{ student.student_address }}">
-                            {{ student.student_address }}
-                        </div>
-                        {% else %}
-                        N/A
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span class="badge badge-primary">
-                            Year {{ student.student_study_year }}/{{ student.programme_duration }}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="font-weight: 500;">{{ student.programme_name }}</div>
-                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                            {{ student.programme_degree_awarded }}
-                        </div>
-                    </td>
-                    <td>{{ student.department_name }}</td>
-                    <td>
-                        {% if student.student_status == 'Active' %}
-                        <span class="badge badge-success">{{ student.student_status }}</span>
-                        {% elif student.student_status == 'Suspended' %}
-                        <span class="badge badge-warning">{{ student.student_status }}</span>
-                        {% elif student.student_status == 'Graduated' %}
-                        <span class="badge badge-primary">{{ student.student_status }}</span>
-                        {% elif student.student_status == 'Withdrawn' %}
-                        <span class="badge badge-error">{{ student.student_status }}</span>
-                        {% else %}
-                        <span class="badge">{{ student.student_status }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if student.student_disciplinary_records %}
-                        <span style="color: var(--warning-color);" title="{{ student.student_disciplinary_records }}">
-                            ⚠️ Records exist
-                        </span>
-                        {% else %}
-                        <span style="color: var(--success-color);">✓ Clean</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <small style="color: var(--text-secondary);">
-                            {{ student.student_date_created.strftime('%Y-%m-%d') }}
-                        </small>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Combined Students Section -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--primary-color);">Student Overview</h2>
+            <div class="badge badge-primary">{{ students|length }} students</div>
+        </div>
+
+        {% if students %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Details</th>
+                        <th>Contact</th>
+                        <th>Programme & Year</th>
+                        <th>Faculty Advisor</th>
+                        <th>Current Enrolments</th>
+                        <th>Organisations</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>
+                            <strong style="font-family: monospace;">{{ student.student_id }}</strong>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                                {{ student.student_first_name }} {{ student.student_last_name }}
+                            </div>
+                            {% if student.student_dob %}
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                DOB: {{ student.student_dob.strftime('%d/%m/%Y') }}
+                            </div>
+                            {% endif %}
+                            {% if student.student_disciplinary_records %}
+                            <div style="font-size: 0.875rem; color: var(--warning-color);">
+                                Disciplinary records exist
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="margin-bottom: 0.25rem;">
+                                <a href="mailto:{{ student.student_email }}" class="text-primary">
+                                    {{ student.student_email }}
+                                </a>
+                            </div>
+                            {% if student.student_contact_phone %}
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                {{ student.student_contact_phone }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="font-weight: 500; margin-bottom: 0.25rem;">{{ student.programme_name }}</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                                {{ student.programme_degree_awarded }}
+                            </div>
+                            <div style="font-size: 0.875rem;">
+                                <span class="badge badge-primary">
+                                    Year {{ student.student_study_year }}/{{ student.programme_duration }}
+                                </span>
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                {{ student.department_name }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if student.faculty_advisor %}
+                            <div style="font-weight: 500; margin-bottom: 0.25rem;">{{ student.faculty_advisor }}</div>
+                            {% if student.advisor_email %}
+                            <div style="font-size: 0.875rem;">
+                                <a href="mailto:{{ student.advisor_email }}" class="text-primary">
+                                    {{ student.advisor_email }}
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% if student.student_advisor_notes %}
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ student.student_advisor_notes }}">
+                                Notes: {{ student.student_advisor_notes }}
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No advisor assigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.current_enrolments %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ student.current_enrolments }}">
+                                {{ student.current_enrolments }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No current enrolments</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.organisation_memberships %}
+                            <div style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ student.organisation_memberships }}">
+                                {{ student.organisation_memberships }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No memberships</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.student_status == 'Active' %}
+                            <span class="badge badge-success">{{ student.student_status }}</span>
+                            {% elif student.student_status == 'Suspended' %}
+                            <span class="badge badge-warning">{{ student.student_status }}</span>
+                            {% elif student.student_status == 'Graduated' %}
+                            <span class="badge badge-primary">{{ student.student_status }}</span>
+                            {% elif student.student_status == 'Withdrawn' %}
+                            <span class="badge badge-error">{{ student.student_status }}</span>
+                            {% else %}
+                            <span class="badge">{{ student.student_status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--background); border-radius: 0.375rem;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;">
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ students|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Total Students</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-color);">
+                        {{ students|selectattr('student_status', 'equalto', 'Active')|list|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Active Students</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning-color);">
+                        {{ students|selectattr('faculty_advisor')|list|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">With Advisors</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary-color);">
+                        {{ students|selectattr('current_enrolments')|list|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Currently Enrolled</div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <h3>No Students Found</h3>
+            <p>There are currently no students in the database.</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-        <h3>No Students Found</h3>
-        <p>There are currently no students in the database.</p>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

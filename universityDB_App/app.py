@@ -17,6 +17,7 @@ from mysql.connector import Error
 from config import db_config
 
 app = Flask(__name__)
+app.secret_key = 'university-db-secret-key-csck542'
 
 
 class DatabaseManager:
@@ -30,177 +31,18 @@ class DatabaseManager:
             print(f"Database error: {e}")
             return None
 
-    def get_all_departments(self):
+    def get_students_data(self):
+        """Students: Combined view of Student, Course_Offering_Student, Student_Advisor, Student_Organisation"""
         try:
             connection = self.get_connection()
             if not connection:
-                return []
+                return {'students': []}
 
             cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    department_id,
-                    department_name,
-                    department_research_areas,
-                    department_notes,
-                    department_date_created,
-                    department_date_modified
-                FROM Department
-                ORDER BY department_name
-            """
-            cursor.execute(query)
-            results = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            return results
-        except Error as e:
-            print(f"Query error: {e}")
-            return []
 
-    def get_all_programmes(self):
-        try:
-            connection = self.get_connection()
-            if not connection:
-                return []
-
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    p.programme_id,
-                    p.programme_name,
-                    p.programme_degree_awarded,
-                    p.programme_duration,
-                    p.programme_notes,
-                    d.department_name,
-                    p.programme_date_created,
-                    p.programme_date_modified
-                FROM Programme p
-                JOIN Department d ON p.department_id = d.department_id
-                ORDER BY d.department_name, p.programme_name
-            """
-            cursor.execute(query)
-            results = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            return results
-        except Error as e:
-            print(f"Query error: {e}")
-            return []
-
-    def get_all_courses(self):
-        try:
-            connection = self.get_connection()
-            if not connection:
-                return []
-
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    c.course_id,
-                    c.course_code,
-                    c.course_name,
-                    c.course_description,
-                    c.course_level,
-                    c.course_credits,
-                    c.course_materials,
-                    c.course_notes,
-                    d.department_name,
-                    c.course_date_created,
-                    c.course_date_modified
-                FROM Course c
-                JOIN Department d ON c.department_id = d.department_id
-                ORDER BY c.course_code
-            """
-            cursor.execute(query)
-            results = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            return results
-        except Error as e:
-            print(f"Query error: {e}")
-            return []
-
-    def get_all_lecturers(self):
-        try:
-            connection = self.get_connection()
-            if not connection:
-                return []
-
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    l.lecturer_id,
-                    l.lecturer_first_name,
-                    l.lecturer_last_name,
-                    l.lecturer_email,
-                    l.lecturer_academic_qualifications,
-                    l.lecturer_expertise,
-                    l.lecturer_course_load,
-                    l.lecturer_research_interests,
-                    l.lecturer_publications,
-                    l.lecturer_status,
-                    d.department_name,
-                    l.lecturer_date_created,
-                    l.lecturer_date_modified
-                FROM Lecturer l
-                JOIN Department d ON l.department_id = d.department_id
-                ORDER BY l.lecturer_last_name, l.lecturer_first_name
-            """
-            cursor.execute(query)
-            results = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            return results
-        except Error as e:
-            print(f"Query error: {e}")
-            return []
-
-    def get_all_staff(self):
-        try:
-            connection = self.get_connection()
-            if not connection:
-                return []
-
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    st.staff_id,
-                    st.staff_first_name,
-                    st.staff_last_name,
-                    st.staff_email,
-                    st.staff_title,
-                    st.staff_type,
-                    st.staff_contract_details,
-                    st.staff_salary,
-                    st.staff_emergency_contact_name,
-                    st.staff_emergency_contact_phone,
-                    st.staff_emergency_contact_email,
-                    st.staff_status,
-                    d.department_name,
-                    st.staff_date_created,
-                    st.staff_date_modified
-                FROM Staff st
-                JOIN Department d ON st.department_id = d.department_id
-                ORDER BY st.staff_last_name, st.staff_first_name
-            """
-            cursor.execute(query)
-            results = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            return results
-        except Error as e:
-            print(f"Query error: {e}")
-            return []
-
-    def get_all_students(self):
-        try:
-            connection = self.get_connection()
-            if not connection:
-                return []
-
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
+            # Combined students query with all related information
+            students_query = """
+                SELECT DISTINCT
                     s.student_id,
                     s.student_first_name,
                     s.student_last_name,
@@ -215,48 +57,404 @@ class DatabaseManager:
                     p.programme_degree_awarded,
                     p.programme_duration,
                     d.department_name,
-                    s.student_date_created,
-                    s.student_date_modified
+                    
+                    -- Faculty advisor (concatenated)
+                    CONCAT(l.lecturer_first_name, ' ', l.lecturer_last_name) AS faculty_advisor,
+                    l.lecturer_email AS advisor_email,
+                    sa.student_advisor_notes,
+                    
+                    -- Current enrolments with grades (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        c.course_code, ' (', 
+                        COALESCE(cos.course_offering_student_grade, 'No Grade'), 
+                        ' - ', cos.course_offering_student_result, ')'
+                    ) SEPARATOR ', ') AS current_enrolments,
+                    
+                    -- Organisation memberships (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        o.organisation_name, ' (', so.student_organisation_role, ')'
+                    ) SEPARATOR ', ') AS organisation_memberships,
+                    
+                    s.student_date_created
+                    
                 FROM Student s
                 JOIN Programme p ON s.programme_id = p.programme_id
                 JOIN Department d ON p.department_id = d.department_id
+                
+                -- Left join for advisor
+                LEFT JOIN Student_Advisor sa ON s.student_id = sa.student_id
+                LEFT JOIN Lecturer l ON sa.lecturer_id = l.lecturer_id
+                
+                -- Left join for current enrolments
+                LEFT JOIN Course_Offering_Student cos ON s.student_id = cos.student_id
+                LEFT JOIN Course_Offering co ON cos.course_offering_id = co.course_offering_id
+                LEFT JOIN Course c ON co.course_id = c.course_id
+                
+                -- Left join for organisation memberships
+                LEFT JOIN Student_Organisation so ON s.student_id = so.student_id
+                LEFT JOIN Organisation o ON so.organisation_id = o.organisation_id
+                
+                GROUP BY s.student_id, s.student_first_name, s.student_last_name, 
+                        s.student_email, s.student_dob, s.student_contact_phone, s.student_address,
+                        s.student_study_year, s.student_disciplinary_records, s.student_status,
+                        p.programme_name, p.programme_degree_awarded, p.programme_duration, d.department_name,
+                        l.lecturer_first_name, l.lecturer_last_name, l.lecturer_email, sa.student_advisor_notes, s.student_date_created
                 ORDER BY s.student_last_name, s.student_first_name
             """
-            cursor.execute(query)
-            results = cursor.fetchall()
+            cursor.execute(students_query)
+            students = cursor.fetchall()
+
             cursor.close()
             connection.close()
-            return results
+
+            return {'students': students}
         except Error as e:
             print(f"Query error: {e}")
-            return []
+            return {'students': []}
 
-    def get_all_research_groups(self):
+    def get_programmes_data(self):
+        """Programmes: Combined view of Programme and Programme_Course_Requirement"""
         try:
             connection = self.get_connection()
             if not connection:
-                return []
+                return {'programmes': []}
 
             cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    research_group_id,
-                    research_group_name,
-                    research_group_description,
-                    research_group_status,
-                    research_group_date_created,
-                    research_group_date_modified
-                FROM Research_Group
-                ORDER BY research_group_name
+
+            # Combined programmes query with course requirements
+            programmes_query = """
+                SELECT DISTINCT
+                    p.programme_id,
+                    p.programme_name,
+                    p.programme_degree_awarded,
+                    p.programme_duration,
+                    p.programme_notes,
+                    d.department_name,
+                    
+                    -- Core requirements (concatenated)
+                    GROUP_CONCAT(DISTINCT 
+                        CASE WHEN pcr.programme_course_requirement_type = 'Core' 
+                        THEN CONCAT(c.course_code, ' (', c.course_name, ')') 
+                        END SEPARATOR ', '
+                    ) AS core_requirements,
+                    
+                    -- Elective requirements (concatenated)
+                    GROUP_CONCAT(DISTINCT 
+                        CASE WHEN pcr.programme_course_requirement_type = 'Elective' 
+                        THEN CONCAT(c.course_code, ' (', c.course_name, ')') 
+                        END SEPARATOR ', '
+                    ) AS elective_requirements,
+                    
+                    -- Optional requirements (concatenated)
+                    GROUP_CONCAT(DISTINCT 
+                        CASE WHEN pcr.programme_course_requirement_type = 'Optional' 
+                        THEN CONCAT(c.course_code, ' (', c.course_name, ')') 
+                        END SEPARATOR ', '
+                    ) AS optional_requirements,
+                    
+                    -- Total requirement count
+                    COUNT(DISTINCT pcr.programme_course_requirement_id) AS total_requirements,
+                    
+                    p.programme_date_created
+                    
+                FROM Programme p
+                JOIN Department d ON p.department_id = d.department_id
+                
+                -- Left join for course requirements
+                LEFT JOIN Programme_Course_Requirement pcr ON p.programme_id = pcr.programme_id
+                LEFT JOIN Course c ON pcr.course_id = c.course_id
+                
+                GROUP BY p.programme_id, p.programme_name, p.programme_degree_awarded, 
+                        p.programme_duration, p.programme_notes, d.department_name, p.programme_date_created
+                ORDER BY d.department_name, p.programme_name
             """
-            cursor.execute(query)
-            results = cursor.fetchall()
+            cursor.execute(programmes_query)
+            programmes = cursor.fetchall()
+
             cursor.close()
             connection.close()
-            return results
+
+            return {'programmes': programmes}
         except Error as e:
             print(f"Query error: {e}")
-            return []
+            return {'programmes': []}
+
+    def get_courses_data(self):
+        """Courses: Combined view of Course, Course_Offering, Course_Offering_Lecturer, Course_Prerequisite"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'courses': []}
+
+            cursor = connection.cursor(dictionary=True)
+
+            # Combined courses query with all related information
+            courses_query = """
+                SELECT DISTINCT
+                    c.course_id,
+                    c.course_code,
+                    c.course_name,
+                    c.course_description,
+                    c.course_level,
+                    c.course_credits,
+                    c.course_materials,
+                    d.department_name,
+                    
+                    -- Prerequisites (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(cp_course.course_code, ' (', cp_course.course_name, ')') SEPARATOR ', ') AS prerequisites,
+                    
+                    -- Current offerings (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        co.course_offering_semester, ' ', 
+                        co.course_offering_year, 
+                        ' - Section ', co.course_offering_section,
+                        ' (', co.course_offering_status, ')'
+                    ) SEPARATOR ', ') AS current_offerings,
+                    
+                    -- Assigned lecturers (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        l.lecturer_first_name, ' ', l.lecturer_last_name
+                    ) SEPARATOR ', ') AS assigned_lecturers,
+                    
+                    c.course_date_created
+                    
+                FROM Course c
+                JOIN Department d ON c.department_id = d.department_id
+                
+                -- Left join for prerequisites
+                LEFT JOIN Course_Prerequisite cp ON c.course_id = cp.course_id
+                LEFT JOIN Course cp_course ON cp.prerequisite_course_id = cp_course.course_id
+                
+                -- Left join for current offerings
+                LEFT JOIN Course_Offering co ON c.course_id = co.course_id 
+                    AND co.course_offering_status IN ('Open', 'Closed')
+                
+                -- Left join for lecturer assignments
+                LEFT JOIN Course_Offering_Lecturer col ON co.course_offering_id = col.course_offering_id
+                LEFT JOIN Lecturer l ON col.lecturer_id = l.lecturer_id
+                
+                GROUP BY c.course_id, c.course_code, c.course_name, c.course_description, 
+                        c.course_level, c.course_credits, c.course_materials, d.department_name, c.course_date_created
+                ORDER BY c.course_code
+            """
+            cursor.execute(courses_query)
+            courses = cursor.fetchall()
+
+            cursor.close()
+            connection.close()
+
+            return {'courses': courses}
+        except Error as e:
+            print(f"Query error: {e}")
+            return {'courses': []}
+
+    def get_staff_data(self):
+        """Staff: Combined view of Lecturer, Staff, Department, Lecturer_Organisation"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'departments': [], 'academic_staff': [], 'non_academic_staff': []}
+
+            cursor = connection.cursor(dictionary=True)
+
+            # Departments with staff counts
+            departments_query = """
+                SELECT 
+                    d.department_id,
+                    d.department_name,
+                    d.department_research_areas,
+                    d.department_notes,
+                    COUNT(DISTINCT l.lecturer_id) AS lecturer_count,
+                    COUNT(DISTINCT s.staff_id) AS staff_count,
+                    d.department_date_created,
+                    d.department_date_modified
+                FROM Department d
+                LEFT JOIN Lecturer l ON d.department_id = l.department_id AND l.lecturer_status = 'Active'
+                LEFT JOIN Staff s ON d.department_id = s.department_id AND s.staff_status = 'Active'
+                GROUP BY d.department_id, d.department_name, d.department_research_areas, 
+                        d.department_notes, d.department_date_created, d.department_date_modified
+                ORDER BY d.department_name
+            """
+            cursor.execute(departments_query)
+            departments = cursor.fetchall()
+
+            # Academic staff (lecturers) with research groups and organisations
+            academic_staff_query = """
+                SELECT DISTINCT
+                    l.lecturer_id,
+                    l.lecturer_first_name,
+                    l.lecturer_last_name,
+                    l.lecturer_email,
+                    l.lecturer_academic_qualifications,
+                    l.lecturer_expertise,
+                    l.lecturer_course_load,
+                    l.lecturer_research_interests,
+                    l.lecturer_publications,
+                    l.lecturer_status,
+                    d.department_name,
+                    
+                    -- Research group memberships (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        rg.research_group_name, ' (', lrg.lecturer_research_group_role, ')'
+                    ) SEPARATOR ', ') AS research_groups,
+                    
+                    -- Organisation memberships (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        o.organisation_name, ' (', lo.lecturer_organisation_role, ')'
+                    ) SEPARATOR ', ') AS organisations,
+                    
+                    l.lecturer_date_created
+                    
+                FROM Lecturer l
+                JOIN Department d ON l.department_id = d.department_id
+                
+                -- Left join for research groups
+                LEFT JOIN Lecturer_Research_Group lrg ON l.lecturer_id = lrg.lecturer_id
+                LEFT JOIN Research_Group rg ON lrg.research_group_id = rg.research_group_id
+                
+                -- Left join for organisations
+                LEFT JOIN Lecturer_Organisation lo ON l.lecturer_id = lo.lecturer_id
+                LEFT JOIN Organisation o ON lo.organisation_id = o.organisation_id
+                
+                GROUP BY l.lecturer_id, l.lecturer_first_name, l.lecturer_last_name, 
+                        l.lecturer_email, l.lecturer_academic_qualifications, l.lecturer_expertise,
+                        l.lecturer_course_load, l.lecturer_research_interests, l.lecturer_publications,
+                        l.lecturer_status, d.department_name, l.lecturer_date_created
+                ORDER BY l.lecturer_last_name, l.lecturer_first_name
+            """
+            cursor.execute(academic_staff_query)
+            academic_staff = cursor.fetchall()
+
+            # Non-academic staff
+            non_academic_staff_query = """
+                SELECT 
+                    st.staff_id,
+                    st.staff_first_name,
+                    st.staff_last_name,
+                    st.staff_email,
+                    st.staff_title,
+                    st.staff_type,
+                    st.staff_contract_details,
+                    st.staff_salary,
+                    st.staff_emergency_contact_name,
+                    st.staff_emergency_contact_phone,
+                    st.staff_emergency_contact_email,
+                    st.staff_status,
+                    d.department_name,
+                    st.staff_date_created
+                FROM Staff st
+                JOIN Department d ON st.department_id = d.department_id
+                ORDER BY st.staff_last_name, st.staff_first_name
+            """
+            cursor.execute(non_academic_staff_query)
+            non_academic_staff = cursor.fetchall()
+
+            cursor.close()
+            connection.close()
+
+            return {
+                'departments': departments,
+                'academic_staff': academic_staff,
+                'non_academic_staff': non_academic_staff
+            }
+        except Error as e:
+            print(f"Query error: {e}")
+            return {'departments': [], 'academic_staff': [], 'non_academic_staff': []}
+
+    def get_research_data(self):
+        """Research: Combined view of Research_Group, Research_Project, Lecturer_Research_Group"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'research_groups': [], 'research_projects': []}
+
+            cursor = connection.cursor(dictionary=True)
+
+            # Research groups with member counts and projects
+            research_groups_query = """
+                SELECT DISTINCT
+                    rg.research_group_id,
+                    rg.research_group_name,
+                    rg.research_group_description,
+                    rg.research_group_status,
+                    
+                    -- Member count
+                    COUNT(DISTINCT lrg.lecturer_id) AS member_count,
+                    
+                    -- Project count
+                    COUNT(DISTINCT rp.research_project_id) AS project_count,
+                    
+                    -- Group members (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        l.lecturer_first_name, ' ', l.lecturer_last_name, ' (', lrg.lecturer_research_group_role, ')'
+                    ) SEPARATOR ', ') AS group_members,
+                    
+                    -- Active projects (concatenated)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        rp.research_project_title, ' (', rp.research_project_status, ')'
+                    ) SEPARATOR ', ') AS group_projects,
+                    
+                    rg.research_group_date_created
+                    
+                FROM Research_Group rg
+                
+                -- Left join for group members
+                LEFT JOIN Lecturer_Research_Group lrg ON rg.research_group_id = lrg.research_group_id
+                LEFT JOIN Lecturer l ON lrg.lecturer_id = l.lecturer_id
+                
+                -- Left join for projects
+                LEFT JOIN Research_Project rp ON rg.research_group_id = rp.research_group_id
+                
+                GROUP BY rg.research_group_id, rg.research_group_name, rg.research_group_description, 
+                        rg.research_group_status, rg.research_group_date_created
+                ORDER BY rg.research_group_name
+            """
+            cursor.execute(research_groups_query)
+            research_groups = cursor.fetchall()
+
+            # Research projects with group and department info
+            research_projects_query = """
+                SELECT 
+                    rp.research_project_id,
+                    rp.research_project_title,
+                    rg.research_group_name,
+                    rg.research_group_id,
+                    d.department_name,
+                    rp.research_project_funding,
+                    rp.research_project_status,
+                    rp.research_project_date_created,
+                    
+                    -- Project team members from the research group
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        l.lecturer_first_name, ' ', l.lecturer_last_name
+                    ) SEPARATOR ', ') AS project_team
+                    
+                FROM Research_Project rp
+                JOIN Research_Group rg ON rp.research_group_id = rg.research_group_id
+                JOIN Department d ON rp.department_id = d.department_id
+                
+                -- Get team members from research group
+                LEFT JOIN Lecturer_Research_Group lrg ON rg.research_group_id = lrg.research_group_id
+                LEFT JOIN Lecturer l ON lrg.lecturer_id = l.lecturer_id
+                
+                GROUP BY rp.research_project_id, rp.research_project_title, rg.research_group_name,
+                        rg.research_group_id, d.department_name, rp.research_project_funding,
+                        rp.research_project_status, rp.research_project_date_created
+                ORDER BY rp.research_project_title
+            """
+            cursor.execute(research_projects_query)
+            research_projects = cursor.fetchall()
+
+            cursor.close()
+            connection.close()
+
+            return {
+                'research_groups': research_groups,
+                'research_projects': research_projects
+            }
+        except Error as e:
+            print(f"Query error: {e}")
+            return {'research_groups': [], 'research_projects': []}
 
 
 db = DatabaseManager()
@@ -269,52 +467,39 @@ def index():
     return render_template('dashboard.html')
 
 
-@app.route('/table/department')
-def view_departments():
-    departments = db.get_all_departments()
-    return render_template('departments.html', departments=departments)
+@app.route('/students')
+def students():
+    data = db.get_students_data()
+    return render_template('students.html', **data)
 
 
-@app.route('/table/programme')
-def view_programmes():
-    programmes = db.get_all_programmes()
-    return render_template('programmes.html', programmes=programmes)
+@app.route('/programmes')
+def programmes():
+    data = db.get_programmes_data()
+    return render_template('programmes.html', **data)
 
 
-@app.route('/table/course')
-def view_courses():
-    courses = db.get_all_courses()
-    return render_template('courses.html', courses=courses)
+@app.route('/courses')
+def courses():
+    data = db.get_courses_data()
+    return render_template('courses.html', **data)
 
 
-@app.route('/table/lecturer')
-def view_lecturers():
-    lecturers = db.get_all_lecturers()
-    return render_template('lecturers.html', lecturers=lecturers)
+@app.route('/staff')
+def staff():
+    data = db.get_staff_data()
+    return render_template('staff.html', **data)
 
 
-@app.route('/table/staff')
-def view_staff():
-    staff = db.get_all_staff()
-    return render_template('staff.html', staff=staff)
+@app.route('/research')
+def research():
+    data = db.get_research_data()
+    return render_template('research.html', **data)
 
 
-@app.route('/table/student')
-def view_students():
-    students = db.get_all_students()
-    return render_template('students.html', students=students)
-
-
-@app.route('/table/research_group')
-def view_research_groups():
-    research_groups = db.get_all_research_groups()
-    return render_template('research_groups.html', research_groups=research_groups)
-
-
-@app.route('/table/<table_name>')
-def view_table(table_name):
-    # For now, just redirect to dashboard for unimplemented tables
-    return render_template('generic_table.html', table_name=table_name.replace('_', ' ').title(), data=[], raw_table_name=table_name)
+@app.route('/reports')
+def reports():
+    return render_template('reports.html')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,246 @@
+<!--
+Final Assignment - CSCK542
+
+Group B Team Members:
+ - Odalo Aimufia
+ - Rami Albaroudi
+ - Suely Argelia Bonga Pereira
+ - Preet Sall
+ - Zaid Widyan
+
+UniversityDB
+This template displays the Research page with:
+- Research groups with members and project counts
+- Research projects with team members and funding details
+-->
+{% extends "base.html" %}
+
+{% block title %}Research - University Database{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">
+        🔬 Research Management
+    </h1>
+
+    <!-- Research Groups Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--primary-color);">Research Groups</h2>
+            <div class="badge badge-primary">{{ research_groups|length }} research groups</div>
+        </div>
+
+        {% if research_groups %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Group Details</th>
+                        <th>Description</th>
+                        <th>Members</th>
+                        <th>Projects</th>
+                        <th>Statistics</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in research_groups %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.25rem;">
+                                {{ group.research_group_name }}
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                ID: {{ group.research_group_id }}
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                Created: {{ group.research_group_date_created.strftime('%Y-%m-%d') }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if group.research_group_description %}
+                            <div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ group.research_group_description }}">
+                                {{ group.research_group_description }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No description
+                                available</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if group.group_members %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ group.group_members }}">
+                                {{ group.group_members }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No members</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if group.group_projects %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ group.group_projects }}">
+                                {{ group.group_projects }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No projects</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="text-align: center;">
+                                <div style="margin-bottom: 0.25rem;">
+                                    <span style="font-weight: 700; color: var(--success-color);">{{ group.member_count
+                                        }}</span>
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary);"> members</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight: 700; color: var(--warning-color);">{{ group.project_count
+                                        }}</span>
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary);"> projects</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if group.research_group_status == 'Active' %}
+                            <span class="badge badge-success">{{ group.research_group_status }}</span>
+                            {% elif group.research_group_status == 'Inactive' %}
+                            <span class="badge badge-error">{{ group.research_group_status }}</span>
+                            {% else %}
+                            <span class="badge">{{ group.research_group_status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Research Projects Section -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--primary-color);">Research Projects</h2>
+            <div class="badge badge-success">{{ research_projects|length }} projects</div>
+        </div>
+
+        {% if research_projects %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Project Title</th>
+                        <th>Research Group</th>
+                        <th>Department</th>
+                        <th>Project Team</th>
+                        <th>Funding</th>
+                        <th>Status</th>
+                        <th>Started</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in research_projects %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                                {{ project.research_project_title }}
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                ID: {{ project.research_project_id }}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">{{ project.research_group_name }}</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                Group ID: {{ project.research_group_id }}
+                            </div>
+                        </td>
+                        <td>{{ project.department_name }}</td>
+                        <td>
+                            {% if project.project_team %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ project.project_team }}">
+                                {{ project.project_team }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No team members</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if project.research_project_funding %}
+                            <div style="font-weight: 500; color: var(--success-color);">
+                                {{ project.research_project_funding }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No funding</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if project.research_project_status == 'Active' %}
+                            <span class="badge badge-success">{{ project.research_project_status }}</span>
+                            {% elif project.research_project_status == 'Completed' %}
+                            <span class="badge badge-primary">{{ project.research_project_status }}</span>
+                            {% elif project.research_project_status == 'On Hold' %}
+                            <span class="badge badge-warning">{{ project.research_project_status }}</span>
+                            {% elif project.research_project_status == 'Cancelled' %}
+                            <span class="badge badge-error">{{ project.research_project_status }}</span>
+                            {% else %}
+                            <span class="badge">{{ project.research_project_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small style="color: var(--text-secondary);">
+                                {{ project.research_project_date_created.strftime('%Y-%m-%d') }}
+                            </small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--background); border-radius: 0.375rem;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;">
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{
+                        research_groups|length }}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Research Groups</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-color);">{{
+                        research_projects|length }}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Research Projects</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning-color);">
+                        {{ research_projects|selectattr('research_project_status', 'equalto', 'Active')|list|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Active Projects</div>
+                </div>
+                <div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary-color);">
+                            {{ research_projects|selectattr('research_project_funding')|list|length }}
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Funded Projects</div>
+                    </div>
+
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Total Funding</div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <h3>No Research Projects Found</h3>
+            <p>There are currently no research projects in the database.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

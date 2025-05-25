@@ -1,3 +1,16 @@
+<!--
+Final Assignment - CSCK542
+
+Group B Team Members:
+ - Odalo Aimufia
+ - Rami Albaroudi
+ - Suely Argelia Bonga Pereira
+ - Preet Sall
+ - Zaid Widyan
+
+UniversityDB
+This Jinja/HTML file includes the dashboard page template for the university DB user interface.
+-->
 {% extends "base.html" %}
 
 {% block title %}Dashboard - University Database{% endblock %}
@@ -8,105 +21,18 @@
         🎓 University Database Management System
     </h1>
 
-    <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <!-- Core Entity Tables -->
-        <div class="card"
-            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">🏢 Departments</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
-                Academic departments and research areas
-            </p>
-            <a href="{{ url_for('view_departments') }}" class="btn"
-                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
-                View Departments
-            </a>
-        </div>
-
-        <div class="card"
-            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">🎓 Programmes</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
-                Degree programmes and academic pathways
-            </p>
-            <a href="{{ url_for('view_programmes') }}" class="btn"
-                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
-                View Programmes
-            </a>
-        </div>
-
-        <div class="card"
-            style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">📚 Courses</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
-                Course catalog and curriculum details
-            </p>
-            <a href="{{ url_for('view_courses') }}" class="btn"
-                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
-                View Courses
-            </a>
-        </div>
-
-        <div class="card"
-            style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">👨‍🏫 Lecturers</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
-                Academic staff and research interests
-            </p>
-            <a href="{{ url_for('view_lecturers') }}" class="btn"
-                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
-                View Lecturers
-            </a>
-        </div>
-
-        <div class="card"
-            style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">👥 Staff</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.9;">
-                Non-academic personnel and administration
-            </p>
-            <a href="{{ url_for('view_staff') }}" class="btn"
-                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
-                View Staff
-            </a>
-        </div>
-
-        <div class="card"
-            style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">👨‍🎓 Students</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.8;">
-                Student records and academic progress
-            </p>
-            <a href="{{ url_for('view_students') }}" class="btn"
-                style="background: rgba(0,0,0,0.1); color: #333; border: 1px solid rgba(0,0,0,0.2);">
-                View Students
-            </a>
-        </div>
-
-        <div class="card"
-            style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: #333; text-align: center;">
-            <h2 style="margin-bottom: 1rem;">🔬 Research Groups</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.8;">
-                Research groups and collaborative projects
-            </p>
-            <a href="{{ url_for('view_research_groups') }}" class="btn"
-                style="background: rgba(0,0,0,0.1); color: #333; border: 1px solid rgba(0,0,0,0.2);">
-                View Research Groups
-            </a>
-        </div>
-    </div>
-
     <div class="card" style="background: var(--background); text-align: center; padding: 2rem;">
         <h3 style="margin-bottom: 1rem; color: var(--text-primary);">CSCK542 Final Project - Group B</h3>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-            University Database Management System - All 7 Core Tables
+            University Database Management System
         </p>
         <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
             <span class="badge badge-primary">MySQL Database</span>
-            <span class="badge badge-primary">Python Flask</span>
+            <span class="badge badge-primary">Python/Flask</span>
             <span class="badge badge-primary">Jinja2 Templates</span>
-            <span class="badge badge-primary">7 Core Tables</span>
+            <span class="badge badge-primary">HTML/CSS</span>
         </div>
     </div>
 </div>
+
 {% endblock %}

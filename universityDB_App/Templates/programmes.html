@@ -1,81 +1,174 @@
+<!--
+Final Assignment - CSCK542
+
+Group B Team Members:
+ - Odalo Aimufia
+ - Rami Albaroudi
+ - Suely Argelia Bonga Pereira
+ - Preet Sall
+ - Zaid Widyan
+
+UniversityDB
+This template displays the Programmes page with a comprehensive view combining:
+- Programme details
+- Course requirements organised by type
+-->
 {% extends "base.html" %}
 
 {% block title %}Programmes - University Database{% endblock %}
 
 {% block content %}
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
-                🎓 Academic Programmes
-            </h1>
-            <p style="color: var(--text-secondary);">
-                Degree programmes offered by the university
-            </p>
-        </div>
-        <div class="badge badge-primary">
-            {{ programmes|length }} programmes
-        </div>
-    </div>
+    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">
+        🎓 Programme Management
+    </h1>
 
-    {% if programmes %}
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Programme Name</th>
-                    <th>Degree Awarded</th>
-                    <th>Duration</th>
-                    <th>Department</th>
-                    <th>Notes</th>
-                    <th>Created</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for programme in programmes %}
-                <tr>
-                    <td><strong>{{ programme.programme_id }}</strong></td>
-                    <td>
-                        <div style="font-weight: 600; color: var(--primary-color);">
-                            {{ programme.programme_name }}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge badge-success">
-                            {{ programme.programme_degree_awarded }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge badge-primary">
-                            {{ programme.programme_duration }} years
-                        </span>
-                    </td>
-                    <td>{{ programme.department_name }}</td>
-                    <td>
-                        {% if programme.programme_notes %}
-                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ programme.programme_notes }}">
+    <!-- Combined Programmes Section -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--primary-color);">Programme Overview</h2>
+            <div class="badge badge-primary">{{ programmes|length }} programmes</div>
+        </div>
+
+        {% if programmes %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Programme Details</th>
+                        <th>Degree & Duration</th>
+                        <th>Department</th>
+                        <th>Core Requirements</th>
+                        <th>Elective Requirements</th>
+                        <th>Optional Requirements</th>
+                        <th>Total Courses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for programme in programmes %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.25rem;">
+                                {{ programme.programme_name }}
+                            </div>
+                            {% if programme.programme_notes %}
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ programme.programme_notes }}">
                                 {{ programme.programme_notes }}
                             </div>
-                        {% else %}
-                            <span style="color: var(--text-secondary);">No notes</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <small style="color: var(--text-secondary);">
-                            {{ programme.programme_date_created.strftime('%Y-%m-%d') }}
-                        </small>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            {% endif %}
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                ID: {{ programme.programme_id }}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="margin-bottom: 0.25rem;">
+                                <span class="badge badge-success">{{ programme.programme_degree_awarded }}</span>
+                            </div>
+                            <div>
+                                <span class="badge badge-primary">{{ programme.programme_duration }} years</span>
+                            </div>
+                        </td>
+                        <td>{{ programme.department_name }}</td>
+                        <td>
+                            {% if programme.core_requirements %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ programme.core_requirements }}">
+                                <span class="badge badge-error"
+                                    style="margin-bottom: 0.25rem; display: block; width: fit-content;">Core</span>
+                                {{ programme.core_requirements }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No core requirements</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if programme.elective_requirements %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ programme.elective_requirements }}">
+                                <span class="badge badge-warning"
+                                    style="margin-bottom: 0.25rem; display: block; width: fit-content;">Elective</span>
+                                {{ programme.elective_requirements }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No electives</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if programme.optional_requirements %}
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                title="{{ programme.optional_requirements }}">
+                                <span class="badge badge-primary"
+                                    style="margin-bottom: 0.25rem; display: block; width: fit-content;">Optional</span>
+                                {{ programme.optional_requirements }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">No optional courses</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="text-align: center;">
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">
+                                    {{ programme.total_requirements }}
+                                </span>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                    courses
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--background); border-radius: 0.375rem;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;">
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ programmes|length
+                        }}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Total Programmes</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-color);">
+                        {{ programmes|selectattr('core_requirements')|list|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">With Core Requirements</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning-color);">
+                        {{ programmes|selectattr('elective_requirements')|list|length }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">With Electives</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary-color);">
+                        {% set total_courses = programmes|sum(attribute='total_requirements') %}
+                        {{ total_courses }}
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Total Course Requirements</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expandable Details Section -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--background); border-radius: 0.375rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Programme Details</h3>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                Hover over course requirement cells to see the complete list of courses.
+                Core requirements are mandatory, electives allow choice within a category,
+                and optional courses provide additional flexibility.
+            </p>
+        </div>
+
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <h3>No Programmes Found</h3>
+            <p>There are currently no programmes in the database.</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-        <h3>No Programmes Found</h3>
-        <p>There are currently no programmes in the database.</p>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
