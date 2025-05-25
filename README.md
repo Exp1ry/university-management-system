@@ -79,12 +79,50 @@ The system manages 18 interconnected tables:
 
 2. Import schema and data:
    ```bash
-   mysql -u username -p universitydb 70% average in final year
+      mysql -u username -p universitydb < universityDB_Queries/universityDB_DDL.sql
+      mysql -u username -p universitydb < universityDB_Queries/universityDB_Data.sql
    ```
-3. **Student Advisor Contact**: Faculty advisor information for specific students
-4. **Courses by Department**: All courses taught by department lecturers
-5. **Staff by Department**: Academic and non-academic staff by department
-6. **Students by Advisor**: Students advised by specific lecturers
+
+### Application Setup
+
+1. Clone the repository
+2. Install dependencies:
+
+   ```bash
+      pip install -r requirements.txt
+   ```
+
+3. Configure database connection in `config.py`:
+
+   ```
+      db_config = {
+      'host': 'localhost',
+      'user': 'your_username',
+      'password': 'your_password',
+      'database': 'universitydb'
+      }
+   ```
+
+4. Run the application:
+
+   ```bash
+     python app.py
+   ```
+
+5. Access at: `http://localhost:5000`
+
+## Demo Accounts
+
+- **Administrator**: `admin` / `admin` (Full access)
+- **Student**: `johnsmith` / `student` (Limited access)
+
+## Available Reports
+
+1. **High-Performing Final Year Students**: Students with >70% average in final year
+2. **Student Advisor Contact**: Faculty advisor information for specific students
+3. **Courses by Department**: All courses taught by department lecturers
+4. **Staff by Department**: Academic and non-academic staff by department
+5. **Students by Advisor**: Students advised by specific lecturers
 
 ## Usage
 
@@ -101,9 +139,3 @@ The system manages 18 interconnected tables:
 - Browse course catalogue
 - View programme requirements
 - Limited to non-sensitive information
-
-## Development Notes
-
-- Uses parameterised queries for security
-- Implements session management
-- Includes error handling
