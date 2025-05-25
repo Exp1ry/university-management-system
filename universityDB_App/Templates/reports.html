@@ -127,9 +127,22 @@ that users can execute with parameters.
     </div>
 
     <!-- Results Section -->
-    <!-- Results Section -->
     {% if results %}
-    <div class="card">
+    <!-- Automatially scroll to results seciton-->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const resultsSection = document.getElementById('results-section');
+            if (resultsSection) {
+                // Scroll with 100px offset from top
+                const offsetTop = resultsSection.offsetTop - 100;
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    </script>
+    <div class="card" id="results-section">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <div>
                 <h2 style="color: var(--primary-color);">{{ report_title }}</h2>

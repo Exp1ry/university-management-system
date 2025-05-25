@@ -11,10 +11,10 @@ Group B Team Members:
 UniversityDB
 '''
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import mysql.connector
 from mysql.connector import Error
-from config import db_config
+from config import db_config, DEMO_USERS
 
 app = Flask(__name__)
 app.secret_key = 'university-db-secret-key-csck542'
@@ -30,6 +30,84 @@ class DatabaseManager:
         except Error as e:
             print(f"Database error: {e}")
             return None
+
+    def get_student_own_data(self, username):
+        """Get data for a specific student only (for student users)"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'students': []}
+
+            cursor = connection.cursor(dictionary=True)
+
+            # Get only the logged-in student's data
+            # Assuming username matches student email or you have a mapping
+            student_query = """
+                SELECT DISTINCT
+                    s.student_id,
+                    s.student_first_name,
+                    s.student_last_name,
+                    s.student_email,
+                    s.student_dob,
+                    s.student_contact_phone,
+                    s.student_address,
+                    s.student_study_year,
+                    s.student_disciplinary_records,
+                    s.student_status,
+                    p.programme_name,
+                    p.programme_degree_awarded,
+                    p.programme_duration,
+                    d.department_name,
+                    
+                    -- Faculty advisor
+                    CONCAT(l.lecturer_first_name, ' ', l.lecturer_last_name) AS faculty_advisor,
+                    l.lecturer_email AS advisor_email,
+                    sa.student_advisor_notes,
+                    
+                    -- Current enrolments (without grades for privacy)
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        c.course_code, ' (', c.course_name, ')'
+                    ) SEPARATOR ', ') AS current_enrolments,
+                    
+                    -- Organisation memberships
+                    GROUP_CONCAT(DISTINCT CONCAT(
+                        o.organisation_name, ' (', so.student_organisation_role, ')'
+                    ) SEPARATOR ', ') AS organisation_memberships,
+                    
+                    s.student_date_created
+                    
+                FROM Student s
+                JOIN Programme p ON s.programme_id = p.programme_id
+                JOIN Department d ON p.department_id = d.department_id
+                
+                LEFT JOIN Student_Advisor sa ON s.student_id = sa.student_id
+                LEFT JOIN Lecturer l ON sa.lecturer_id = l.lecturer_id
+                LEFT JOIN Course_Offering_Student cos ON s.student_id = cos.student_id
+                LEFT JOIN Course_Offering co ON cos.course_offering_id = co.course_offering_id
+                LEFT JOIN Course c ON co.course_id = c.course_id
+                LEFT JOIN Student_Organisation so ON s.student_id = so.student_id
+                LEFT JOIN Organisation o ON so.organisation_id = o.organisation_id
+                
+                WHERE s.student_email = %s OR LOWER(CONCAT(s.student_first_name, s.student_last_name)) = LOWER(%s)
+                
+                GROUP BY s.student_id, s.student_first_name, s.student_last_name, 
+                        s.student_email, s.student_dob, s.student_contact_phone, s.student_address,
+                        s.student_study_year, s.student_disciplinary_records, s.student_status,
+                        p.programme_name, p.programme_degree_awarded, p.programme_duration, d.department_name,
+                        l.lecturer_first_name, l.lecturer_last_name, l.lecturer_email, sa.student_advisor_notes, s.student_date_created
+            """
+
+            cursor.execute(
+                student_query, (username, username.replace(' ', '')))
+            students = cursor.fetchall()
+
+            cursor.close()
+            connection.close()
+
+            return {'students': students}
+        except Error as e:
+            print(f"Query error: {e}")
+            return {'students': []}
 
     def get_students_data(self):
         """Students: Combined view of Student, Course_Offering_Student, Student_Advisor, Student_Organisation"""
@@ -635,46 +713,114 @@ class DatabaseManager:
 
 db = DatabaseManager()
 
+# Simple login check
+
+
+def is_logged_in():
+    return 'user' in session
+
+
+def is_admin():
+    return session.get('user', {}).get('access_all', False)
+
+
 # Routes
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if username in DEMO_USERS and DEMO_USERS[username]['password'] == password:
+            session['user'] = DEMO_USERS[username]
+            session['user']['username'] = username
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid login')
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 
 @app.route('/')
 def index():
+    if not is_logged_in():
+        return redirect(url_for('login'))
     return render_template('dashboard.html')
 
 
 @app.route('/students')
 def students():
-    data = db.get_students_data()
+    if not is_logged_in():
+        return redirect(url_for('login'))
+
+    # Students can only see their own data, admins see all
+    if is_admin():
+        data = db.get_students_data()  # All students
+    else:
+        # Get only current student's data
+        data = db.get_student_own_data(session['user']['username'])
+
     return render_template('students.html', **data)
-
-
-@app.route('/programmes')
-def programmes():
-    data = db.get_programmes_data()
-    return render_template('programmes.html', **data)
 
 
 @app.route('/courses')
 def courses():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    # Both admins and students can access courses
     data = db.get_courses_data()
     return render_template('courses.html', **data)
 
 
+@app.route('/programmes')
+def programmes():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    # Both admins and students can access programmes
+    data = db.get_programmes_data()
+    return render_template('programmes.html', **data)
+
+
 @app.route('/staff')
 def staff():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    # Only admins can access staff
+    if not is_admin():
+        flash('Access denied. Admin access required.', 'error')
+        return redirect(url_for('index'))
+
     data = db.get_staff_data()
     return render_template('staff.html', **data)
 
 
 @app.route('/research')
 def research():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    # Only admins can access research
+    if not is_admin():
+        flash('Access denied. Admin access required.', 'error')
+        return redirect(url_for('index'))
+
     data = db.get_research_data()
     return render_template('research.html', **data)
 
 
 @app.route('/reports', methods=['GET', 'POST'])
 def reports():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    # Only admins can access reports
+    if not is_admin():
+        flash('Access denied. Admin access required.', 'error')
+        return redirect(url_for('index'))
     results = []
     query_executed = None
     report_title = None

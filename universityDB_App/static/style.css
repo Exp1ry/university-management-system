@@ -343,3 +343,37 @@ body {
 .mt-3 {
     margin-top: 1.5rem;
 }
+
+/* Back to top button */
+#back-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+#back-to-top:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+#back-to-top.show {
+    display: block;
+}
+
+/* Smooth scrolling for the entire site */
+html {
+    scroll-behavior: smooth;
+}

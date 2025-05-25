@@ -21,6 +21,13 @@ This Jinja/HTML file includes the dashboard page template for the university DB 
         🎓 University Database Management System
     </h1>
 
+    <div class="card"
+        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; margin-bottom: 2rem;">
+        <h2>Welcome, {{ session.user.role }}!</h2>
+        <p>Logged in as: {{ session.user.username }}</p>
+    </div>
+
+
     <div class="card" style="background: var(--background); text-align: center; padding: 2rem;">
         <h3 style="margin-bottom: 1rem; color: var(--text-primary);">CSCK542 Final Project - Group B</h3>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">

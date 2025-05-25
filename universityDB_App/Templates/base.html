@@ -37,10 +37,20 @@ The components within this file (navbar, buttons, header, footer) are reused for
                     <a href="{{ url_for('students') }}" class="nav-link">Students</a>
                     <a href="{{ url_for('courses') }}" class="nav-link">Courses</a>
                     <a href="{{ url_for('programmes') }}" class="nav-link">Programmes</a>
+
+                    {% if session.user.access_all %}
                     <a href="{{ url_for('staff') }}" class="nav-link">Staff</a>
                     <a href="{{ url_for('research') }}" class="nav-link">Research</a>
                     <a href="{{ url_for('reports') }}" class="nav-link">Reports</a>
+                    {% endif %}
+
+                    <div style="margin-left: auto; display: flex; align-items: center; gap: 1rem;">
+                        <span style="color: var(--text-secondary);">{{ session.user.role }}: {{ session.user.username
+                            }}</span>
+                        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                    </div>
                 </div>
+
             </div>
         </div>
     </nav>
@@ -85,6 +95,35 @@ The components within this file (navbar, buttons, header, footer) are reused for
             </div>
         </div>
     </footer>
+    <!-- Back to top button -->
+    <button id="back-to-top" title="Back to top">
+        ↑
+    </button>
+
+    <!-- Back to top JavaScript -->
+    <script>
+        // Get the button
+        let backToTopButton = document.getElementById("back-to-top");
+
+        // Show button when user scrolls down 100px from top
+        window.onscroll = function () {
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                backToTopButton.classList.add("show");
+            } else {
+                backToTopButton.classList.remove("show");
+            }
+        };
+
+        // Scroll to top when button is clicked
+        backToTopButton.addEventListener("click", function () {
+            document.body.scrollTop = 0; // For Safari
+            document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+        });
+    </script>
+</body>
+
+</html>
+
 </body>
 
 </html>

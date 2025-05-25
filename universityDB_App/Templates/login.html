@@ -1,0 +1,59 @@
+<!--
+Final Assignment - CSCK542
+
+Group B Team Members:
+ - Odalo Aimufia
+ - Rami Albaroudi
+ - Suely Argelia Bonga Pereira
+ - Preet Sall
+ - Zaid Widyan
+
+UniversityDB
+This Jinja/HTML file includes the login page template for the university DB user interface.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - University Database</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body
+    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div class="card" style="width: 400px;">
+        <h1 style="text-align: center; margin-bottom: 2rem;">🎓 UniversityDB Login</h1>
+
+        {% if get_flashed_messages() %}
+        <div style="background: #fee; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1rem; color: #c33;">
+            {{ get_flashed_messages()[0] }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label>Username:</label>
+                <input type="text" name="username" required
+                    style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; border: 1px solid #ddd; border-radius: 0.375rem;">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label>Password:</label>
+                <input type="password" name="password" required
+                    style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; border: 1px solid #ddd; border-radius: 0.375rem;">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Login</button>
+        </form>
+
+        <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 0.375rem; text-align: center;">
+            <strong>Demo Accounts:</strong><br>
+            Admin (Full Access)<br>
+            Student (Limited Access)
+        </div>
+    </div>
+</body>
+
+</html>
