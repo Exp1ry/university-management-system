@@ -1,7 +1,7 @@
 university-management-system
 ├── .gitignore
 ├── LICENCE
-├── README
+├── README.md
 ├── universityDB_App
 │   ├── app.py
 │   ├── config.py
@@ -44,5 +44,6 @@ university-management-system
     ├── universityDB_DDL.sql
     ├── universityDB_ERD.png
     ├── universityDB_Indexes.sql
+    ├── universityDB_Tests.sql
     ├── universityDB_Workbook.mwb
     └── universityDB_Workbook.mwb.bak
